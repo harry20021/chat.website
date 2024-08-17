@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harry Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #007bff; /* Blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+        .chat-container {
+            width: 500px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff; /* Blue color for the title */
+        }
+        .messages {
+            flex-grow: 1;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            max-height: 300px;
+        }
+        .message {
+            margin-bottom: 15px;
+        }
+        .message .text, .message video {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .message video {
+            width: 100%;
+            max-height: 200px;
+            background-color: #000;
+        }
+        .message .delete-btn {
+            background-color: #ff4757;
+            border: none;
+            color: white;
+            padding: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        input[type="text"], input[type="file"], input[type="text"]#username {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>Harry Chat</h1>
+        <input type="text" id="username" placeholder="Enter your name" />
+        <div class="messages" id="messages">
+            <!-- Messages will be displayed here -->
+        </div>
+        <input type="text" id="messageInput" placeholder="Type a message" />
+        <input type="file" id="videoInput" accept="video/*" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        let messages = JSON.parse(localStorage.getItem('messages')) || [];
+
+        function displayMessages() {
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = '';
+            messages.forEach((message, index) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                messageDiv.setAttribute('id', `message-${index}`);
+
+                if (message.text) {
+                    const textSpan = document.createElement('span');
+                    textSpan.classList.add('text');
+                    textSpan.textContent = `${message.username}: ${message.text}`;
+                    messageDiv.appendChild(textSpan);
+                }
+
+                if (message.video) {
+                    const video = document.createElement('video');
+                    video.setAttribute('controls', '');
+                    video.src = message.video;
+                    messageDiv.appendChild(video);
+                }
+
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-btn');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = function () {
+                    deleteMessage(index);
+                };
+
+                messageDiv.appendChild(deleteButton);
+                messagesContainer.appendChild(messageDiv);
+            });
+        }
+
+        function sendMessage() {
+            const messageText = document.getElementById('messageInput').value;
+            const videoFile = document.getElementById('videoInput').files[0];
+            const username = document.getElementById('username').value || 'Anonymous';
+            let videoSrc = '';
+
+            if (videoFile) {
+                videoSrc = URL.createObjectURL(videoFile);
+            }
+
+            if (messageText.trim() !== '' || videoFile) {
+                const message = {
+                    username: username,
+                    text: messageText.trim(),
+                    video: videoSrc
+                };
+                messages.push(message);
+                localStorage.setItem('messages', JSON.stringify(messages));
+
+                document.getElementById('messageInput').value = '';
+                document.getElementById('videoInput').value = '';
+
+                displayMessages();
+            } else {
+                alert('Please enter a message or upload a video.');
+            }
+        }
+
+        function deleteMessage(index) {
+            messages.splice(index, 1);
+            localStorage.setItem('messages', JSON.stringify(messages));
+            displayMessages();
+        }
+
+        displayMessages();
+    </script>
+</body>
+</html>
